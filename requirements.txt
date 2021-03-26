@@ -1,0 +1,6 @@
+tqdm
+transformers==4.2.1
+pytorch-lightning==1.1.1
+rank_bm25
+sklearn
+tensorboard_logger

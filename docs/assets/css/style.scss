@@ -1,0 +1,17 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+#main_content{
+  float: left;
+  width: 100%;
+}
+
+.small-caps {
+  font-variant-caps: small-caps;
+} 
+
+h1 {
+  font-size: 25px;
+}
