@@ -1,7 +1,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from rank_bm25 import BM25Okapi
 import numpy as np
-import naturalproofs.utils as utils
+import naturalproofs.dataloaders as dataloaders
 import pickle
 import transformers
 import os
@@ -15,17 +15,17 @@ parser.add_argument(
     '--method', required=True, choices=['tfidf', 'bm25', 'random', 'distribution']
 )
 parser.add_argument(
-    '--datapath', default='/path/to/dataset_tokenized__bert-base-cased_200.pkl'
+    '--datapath', default='/path/to/tokenized.pkl'
 )
 parser.add_argument(
-    '--savedir', default='/path/to/out'
+    '--savedir', default='/out'
 )
 parser.add_argument(
     '--tokenizer', default='bert-base-cased'
 )
 parser.add_argument(
     '--datapath-base',
-    default='/data/dataset.json'
+    default='/path/to/dataset_name.json'
 )
 parser.add_argument(
     '--split', default='valid', choices=['valid', 'test']
@@ -39,7 +39,7 @@ ds_base = json.load(open(args.datapath_base, 'rb'))
 
 tokenizer = transformers.AutoTokenizer.from_pretrained(args.tokenizer)
 ds_raw = pickle.load(open(args.datapath, 'rb'))
-xdl, rdl, x2rs = utils.get_eval_dataloaders(
+xdl, rdl, x2rs = dataloaders.get_eval_dataloaders(
     ds_raw,
     pad=tokenizer.pad_token_id,
     token_limit=10000,
@@ -87,6 +87,7 @@ if args.method == 'bm25':
     print("== Computing bm25")
 
     bm25 = BM25Okapi(references)
+
     x2ranked = {}
     for (x, xid) in tqdm(examples, total=len(examples)):
         scores = bm25.get_scores(x)
@@ -110,14 +111,16 @@ if args.method == 'random':
 
 if args.method == 'distribution':
     print("== Computing according to training reference distribution")
-    train_xids = set(ds_base['splits']['train']['example_ids'])
+    id2item = {}
+    for item in ds_base['dataset']['theorems'] + ds_base['dataset']['definitions'] + ds_base['dataset']['others']:
+        id2item[item['id']] = item
     from collections import Counter
     counts = Counter()
-    for item in ds_base['dataset']['retrieval_examples']:
-        if item['example_id'] in train_xids:
-            for p in item['proofs']:
-                for r in p['ref_ids']:
-                    counts[r] += 1
+    for (tid, pix) in ds_base['splits'][args.split]['examples']:
+        item = id2item[tid]
+        proof = item['proofs'][pix]
+        for rid in proof['ref_ids']:
+            counts[rid] += 1
 
     xs = counts.most_common()
     ranked_rids = [x[0] for x in xs]
@@ -132,7 +135,7 @@ if args.method == 'distribution':
 # Save
 if not os.path.exists(args.savedir):
     os.makedirs(args.savedir, exist_ok=True)
-outfile = os.path.join(os.path.dirname(args.savedir), 'eval_%s.pkl' % args.method)
+outfile = os.path.join(args.savedir, '%s__eval.pkl' % args.method)
 
 pickle.dump({
     'x2ranked': x2ranked,
