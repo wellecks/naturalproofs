@@ -16,13 +16,12 @@ This repo contains:
 
 Please cite our work if you found the resources in this repository useful:
 ```
-@article{welleck2021naturalproofs,
-  title={NaturalProofs: Mathematical Theorem Proving in Natural Language}, 
+@inproceedings{welleck2021naturalproofs,
+  title={NaturalProofs: Mathematical Theorem Proving in Natural Language},
   author={Sean Welleck and Jiacheng Liu and Ronan Le Bras and Hannaneh Hajishirzi and Yejin Choi and Kyunghyun Cho},
+  booktitle={Thirty-fifth Conference on Neural Information Processing Systems Datasets and Benchmarks Track (Round 1)},
   year={2021},
-  eprint={2104.01112},
-  archivePrefix={arXiv},
-  primaryClass={cs.IR}
+  url={https://openreview.net/forum?id=Jvxa8adr3iY}
 }
 ```
 
